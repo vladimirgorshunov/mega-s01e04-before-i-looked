@@ -1,8 +1,9 @@
 ---
 plan: morning-digest
-status: ready
+status: done
 owner: rook
 opened: 2026-10-29
+closed: 2026-11-04
 ---
 
 # Morning digest
@@ -77,3 +78,39 @@ page again with `LANE_MARKER` unset (the banner reads "no marker set") and uploa
 link. Move this plan to `docs/plans/done/` with its issue list.
 
 Done when: the preview link no longer shows the lane marker.
+
+## Issues
+
+All work belongs to this repository's issue list:
+
+| Issue | Plan section |
+|---|---|
+| [#1](https://github.com/vladimirgorshunov/mega-s01e04-before-i-looked/issues/1) | 1: shared reader contract |
+| [#2](https://github.com/vladimirgorshunov/mega-s01e04-before-i-looked/issues/2) | 1: run log reader |
+| [#3](https://github.com/vladimirgorshunov/mega-s01e04-before-i-looked/issues/3) | 2a: digest page |
+| [#4](https://github.com/vladimirgorshunov/mega-s01e04-before-i-looked/issues/4) | 2b: JSON |
+| [#5](https://github.com/vladimirgorshunov/mega-s01e04-before-i-looked/issues/5) | 2c: board link |
+| [#6](https://github.com/vladimirgorshunov/mega-s01e04-before-i-looked/issues/6) | 2d: route tests |
+| [#7](https://github.com/vladimirgorshunov/mega-s01e04-before-i-looked/issues/7) | 3: preview for review |
+| [#8](https://github.com/vladimirgorshunov/mega-s01e04-before-i-looked/issues/8) | 4: marker removal and archive |
+
+## Completion evidence
+
+The reviewer confirmed seeing the preview in course claim 6. This is progress,
+not a solved verdict. Issue #7 was closed prematurely after handoff, reopened,
+and closed again only after that confirmation and replacement verification.
+
+The student explicitly approved the marker-free replacement at the
+[same public preview URL](https://vladimirgorshunov.github.io/mega-s01e04-before-i-looked/).
+[Publication PR #11](https://github.com/vladimirgorshunov/mega-s01e04-before-i-looked/pull/11)
+removes the marker from the capture environment and bypasses `.env` loading without
+changing application runtime behavior.
+[Deployment 41747112612](https://github.com/vladimirgorshunov/mega-s01e04-before-i-looked/actions/runs/41747112612)
+passed the existing test/typecheck steps and published the actual sample response.
+
+Public verification: HTTP 200; banner exactly `no marker set`; former marker
+absent (privately compared raw and HTML-escaped values); five job rows; one bad
+line; self-contained HTML with no scripts, linked stylesheets or images.
+Browser visual inspection confirmed the banner, readable table and highlighted
+retry/failure rows; the owned tab was closed. No marker value or preview is
+committed. Course resubmission remains with the parent harness.
