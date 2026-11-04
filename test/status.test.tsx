@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -29,6 +29,7 @@ describe('status board', () => {
     const runsDir = mkdtempSync(join(tmpdir(), 'rig-status-'));
     try {
       writeFileSync(join(runsDir, '2026-11-01.jsonl'), '');
+      mkdirSync(join(runsDir, '2026-11-03.jsonl'));
       writeFileSync(join(runsDir, '2026-11-02.jsonl'), [
         { at: '2026-11-02T01:00:00+01:00', job: 'sync', status: 'ok', owner: null },
         { at: '2026-11-02T02:00:00+01:00', job: 'sync', status: 'retry', owner: null },

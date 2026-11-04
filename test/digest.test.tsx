@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
 import type { RigConfig } from '../src/config.js';
+import type { DigestRow } from '../src/digest/types.js';
 
 const night = '2026-10-29';
 let runsDir: string;
@@ -35,7 +36,17 @@ async function readDigest() {
   expect(html.headers.get('content-type')).toContain('text/html');
   expect(json.status).toBe(200);
   expect(json.headers.get('content-type')).toContain('application/json');
-  return { html: await html.text(), json: await json.json() };
+  const markup = await html.text();
+  const payload = await json.json();
+  const cells = [...markup.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/g)]
+    .filter((match) => match[1].includes('<td>'))
+    .map((match) => [...match[1].matchAll(/<td>([\s\S]*?)<\/td>/g)].map((cell) => cell[1]));
+  expect(cells).toEqual(payload.rows.map((row: DigestRow) => [
+    row.job, row.owner ?? '—', String(row.runs), String(row.retries),
+    row.lastStatus, row.lastError ?? '—', row.firstAt, row.lastAt,
+  ]));
+  expect(markup).toContain(`bad lines: ${payload.badLines}`);
+  return { html: markup, json: payload };
 }
 
 describe('digest routes', () => {
@@ -59,6 +70,22 @@ describe('digest routes', () => {
     expect(result.html).toContain('upstream unavailable');
     expect(result.html).toContain('2026-10-29T01:10:00+02:00');
     expect(result.html).toContain('—');
+  });
+
+  it('marks failed jobs and the three-retry boundary on their own rows', async () => {
+    const lines: string[] = [];
+    for (const [job, retries] of [['two-retries', 2], ['three-retries', 3]] as const) {
+      for (let n = 0; n < retries; n += 1) {
+        lines.push(JSON.stringify({ at: `2026-10-29T01:0${n}:00+02:00`, job, owner: null, status: 'retry' }));
+      }
+    }
+    lines.push(JSON.stringify({ at: '2026-10-29T01:00:00+02:00', job: 'failed', owner: null, status: 'fail' }));
+    writeNight(lines);
+    const result = await readDigest();
+    const rows = [...result.html.matchAll(/<tr\b([^>]*)>\s*<td>([^<]*)<\/td>/g)];
+    expect(rows.map((row) => [row[2], row[1].includes('class="warn"')])).toEqual([
+      ['failed', true], ['three-retries', true], ['two-retries', false],
+    ]);
   });
 
   it('returns 404 from both routes when the night has no file', async () => {

@@ -14,7 +14,7 @@ last status and error, and first/last log timestamps. Retry counts of 3 or more 
 are marked. Bad lines are counted; an empty night shows "nothing ran", and a missing night
 returns 404.
 
-The status board at `/` links each night on disk to `/digest/<night>`. Its ok / retry / fail
+The status board at `/` links each regular night file on disk to `/digest/<night>`. Its ok / retry / fail
 counts summarize each job's latest status, not the number of log entries. Empty nights show
 zero counts; malformed log lines do not count as jobs.
 
