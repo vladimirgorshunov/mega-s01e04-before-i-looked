@@ -21,3 +21,8 @@ It sorts jobs by name; first/last times and the latest owner/status use chronolo
 while keeping the original timestamp offsets. The most recent error is retained after recovery.
 Malformed JSON or invalid record shapes count as bad lines (including blank records, but not a
 terminating newline). Missing files return no night; an empty file is a night with no rows.
+
+`GET /api/digest/:night` returns `{ rows, badLines }` for a `YYYY-MM-DD` night.
+Rows are sorted by job and retain nullable owner/error values and original timestamp offsets.
+An empty file returns `{ "rows": [], "badLines": 0 }`; a missing or invalid night returns
+404 with `{ "error": "Night not found" }`.
