@@ -30,3 +30,23 @@ terminating newline). Missing files return no night; an empty file is a night wi
 Rows are sorted by job and retain nullable owner/error values and original timestamp offsets.
 An empty file returns `{ "rows": [], "badLines": 0 }`; a missing or invalid night returns
 404 with `{ "error": "Night not found" }`.
+
+## Review preview
+
+The manually dispatched `Publish digest preview` workflow captures the actual
+`/digest/2026-10-28` response into ignored `var/preview/index.html` and deploys only
+that self-contained HTML file to GitHub Pages. It runs only from `main`, uses Node 26
+and pnpm 12.16.1, and installs locked dependencies with lifecycle scripts disabled.
+The repository Actions secret `LANE_MARKER` supplies the approved public lane banner;
+neither its value nor captured HTML belongs in git. Publishing or replacing that
+public page requires the student's approval; marker removal is a separate approval.
+
+For a local capture while the server is running:
+
+```sh
+mkdir -p var/preview
+curl --fail --silent --show-error http://127.0.0.1:8787/digest/2026-10-28 --output var/preview/index.html
+```
+
+Pages must be configured for GitHub Actions and the `github-pages` environment must
+allow deployment from `main`. No custom domain, tunnel, or paid host is needed.

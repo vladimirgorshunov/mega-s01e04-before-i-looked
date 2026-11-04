@@ -1,0 +1,68 @@
+name: Publish digest preview
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '26'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '12.16.1'
+          run_install: false
+      - name: Install locked dependencies without lifecycle scripts
+        run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Check application
+        run: pnpm test && pnpm typecheck
+      - uses: actions/configure-pages@v5
+      - name: Capture the running sample digest
+        env:
+          LANE_MARKER: ${{ secrets.LANE_MARKER }}
+          PORT: '8787'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$LANE_MARKER"
+          mkdir -p var/preview
+          pnpm start > var/preview-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          curl --fail --silent --show-error --retry 30 --retry-connrefused --retry-delay 1 \
+            http://127.0.0.1:8787/digest/2026-10-28 --output var/preview/index.html
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+          import { html as renderText } from 'hono/html';
+          const html = readFileSync('var/preview/index.html', 'utf8');
+          const banner = await renderText`${process.env.LANE_MARKER.trim()}`;
+          assert(html.includes(`<span class="marker">${banner}</span>`), 'Lane banner must be present');
+          assert(html.includes('bad lines: 1'), 'Expected one malformed line');
+          assert.equal((html.match(/<tr[^>]*><td>/g) ?? []).length, 5);
+          assert(!/<script\b|<link\b|<img\b/i.test(html), 'Preview must be self-contained');
+          console.log('Captured self-contained sample digest: 5 jobs, 1 bad line, lane banner present');
+          NODE
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: var/preview
+          retention-days: 1
+      - name: Deploy preview
+        id: deployment
+        uses: actions/deploy-pages@v4
