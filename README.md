@@ -14,6 +14,10 @@ last status and error, and first/last log timestamps. Retry counts of 3 or more 
 are marked. Bad lines are counted; an empty night shows "nothing ran", and a missing night
 returns 404.
 
+The status board at `/` links each night on disk to `/digest/<night>`. Its ok / retry / fail
+counts summarize each job's latest status, not the number of log entries. Empty nights show
+zero counts; malformed log lines do not count as jobs.
+
 Working on it with an agent: start at [AGENTS.md](AGENTS.md).
 
 The digest reader counts every valid log record as a run and every `retry` record as a retry.
