@@ -35,14 +35,13 @@ jobs:
       - uses: actions/configure-pages@v5
       - name: Capture the running sample digest
         env:
-          LANE_MARKER: ${{ secrets.LANE_MARKER }}
           PORT: '8787'
         shell: bash
         run: |
           set -euo pipefail
-          test -n "$LANE_MARKER"
           mkdir -p var/preview
-          pnpm start > var/preview-server.log 2>&1 &
+          # Bypass start's .env loading and unset inherited markers for the public copy.
+          env -u LANE_MARKER pnpm exec tsx src/server.ts > var/preview-server.log 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
           curl --fail --silent --show-error --retry 30 --retry-connrefused --retry-delay 1 \
@@ -50,14 +49,12 @@ jobs:
           node --input-type=module <<'NODE'
           import { readFileSync } from 'node:fs';
           import assert from 'node:assert/strict';
-          import { html as renderText } from 'hono/html';
           const html = readFileSync('var/preview/index.html', 'utf8');
-          const banner = await renderText`${process.env.LANE_MARKER.trim()}`;
-          assert(html.includes(`<span class="marker">${banner}</span>`), 'Lane banner must be present');
+          assert(html.includes('<span class="marker">no marker set</span>'), 'Public banner must be unmarked');
           assert(html.includes('bad lines: 1'), 'Expected one malformed line');
           assert.equal((html.match(/<tr[^>]*><td>/g) ?? []).length, 5);
           assert(!/<script\b|<link\b|<img\b/i.test(html), 'Preview must be self-contained');
-          console.log('Captured self-contained sample digest: 5 jobs, 1 bad line, lane banner present');
+          console.log('Captured self-contained sample digest: 5 jobs, 1 bad line, no marker set');
           NODE
       - uses: actions/upload-pages-artifact@v4
         with:
