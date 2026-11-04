@@ -37,9 +37,10 @@ The manually dispatched `Publish digest preview` workflow captures the actual
 `/digest/2026-10-28` response into ignored `var/preview/index.html` and deploys only
 that self-contained HTML file to GitHub Pages. It runs only from `main`, uses Node 26
 and pnpm 12.16.1, and installs locked dependencies with lifecycle scripts disabled.
-The repository Actions secret `LANE_MARKER` supplies the approved public lane banner;
-neither its value nor captured HTML belongs in git. Publishing or replacing that
-public page requires the student's approval; marker removal is a separate approval.
+The approved review is complete: publication now unsets `LANE_MARKER` and bypasses
+`.env` loading, so the replacement banner reads `no marker set`. Neither marker
+values nor captured HTML belong in git. Replacing the public page requires the
+student's approval.
 
 For a local capture while the server is running:
 
