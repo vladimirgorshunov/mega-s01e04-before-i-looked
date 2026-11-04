@@ -42,6 +42,9 @@ The approved review is complete: publication now unsets `LANE_MARKER` and bypass
 values nor captured HTML belong in git. Replacing the public page requires the
 student's approval.
 
+The completed [morning-digest plan](docs/plans/done/2026-11-04-morning-digest.md)
+records its issue list, review correction, and same-URL marker removal evidence.
+
 For a local capture while the server is running:
 
 ```sh
