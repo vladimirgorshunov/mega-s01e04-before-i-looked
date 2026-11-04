@@ -10,3 +10,9 @@ pnpm dev               # http://localhost:8787
 ```
 
 Working on it with an agent: start at [AGENTS.md](AGENTS.md).
+
+The digest reader counts every valid log record as a run and every `retry` record as a retry.
+It sorts jobs by name; first/last times and the latest owner/status use chronological instants
+while keeping the original timestamp offsets. The most recent error is retained after recovery.
+Malformed JSON or invalid record shapes count as bad lines (including blank records, but not a
+terminating newline). Missing files return no night; an empty file is a night with no rows.
